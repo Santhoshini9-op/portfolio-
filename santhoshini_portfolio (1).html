@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>P. Santhoshini | Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#020818;--bg2:#050f2e;--bg3:#0a1a3e;
+  --cyan:#00f5ff;--blue:#0066ff;--purple:#8b00ff;--neon:#00ff88;
+  --text:#e0f0ff;--text2:#7eb8d4;--text3:#3a6a8a;
+  --glass:rgba(0,100,200,0.08);--glass2:rgba(0,200,255,0.05);
+  --border:rgba(0,200,255,0.15);--border2:rgba(0,200,255,0.3);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif}
+canvas#bg{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
+
+/* ── LOADER ── */
+#loader{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s ease}
+#loader.hide{opacity:0;pointer-events:none}
+.loader-ring{width:120px;height:120px;border:2px solid var(--border);border-top-color:var(--cyan);border-right-color:var(--purple);border-radius:50%;animation:spin 1s linear infinite;position:relative}
+.loader-ring::before{content:'';position:absolute;inset:8px;border:1px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 1.5s linear infinite reverse}
+.loader-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;color:var(--cyan);letter-spacing:4px;margin-top:2rem;text-shadow:0 0 20px var(--cyan)}
+.loader-bar-wrap{width:300px;height:2px;background:var(--border);margin-top:1.5rem;border-radius:2px;overflow:hidden}
+.loader-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--purple));width:0;animation:loadbar 2.5s ease forwards}
+@keyframes loadbar{to{width:100%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── AI AVATAR INTRO ── */
+#intro{position:fixed;inset:0;z-index:900;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.8s ease}
+#intro.show{opacity:1;pointer-events:all}
+.avatar-wrap{position:relative;width:160px;height:160px;margin-bottom:2rem}
+.avatar-glow{position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,255,0.2),transparent 70%);animation:pulse 2s ease-in-out infinite}
+.avatar-ring{position:absolute;inset:0;border:2px solid var(--cyan);border-radius:50%;animation:pulse-ring 2s ease-in-out infinite}
+.avatar-circle{width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,var(--bg3),var(--bg2));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;position:relative;z-index:2;overflow:hidden}
+.avatar-face{font-size:5rem;line-height:1;filter:drop-shadow(0 0 20px var(--cyan))}
+.intro-text{max-width:600px;text-align:center;padding:0 2rem}
+.intro-msg{font-size:1.1rem;color:var(--text2);line-height:1.8;min-height:80px;font-family:'Share Tech Mono',monospace}
+.intro-msg .cursor{display:inline-block;width:10px;height:1.1em;background:var(--cyan);animation:blink 0.7s step-end infinite;vertical-align:text-bottom}
+.intro-enter-btn{margin-top:2.5rem;padding:14px 48px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.85rem;letter-spacing:3px;cursor:pointer;text-transform:uppercase;position:relative;overflow:hidden;transition:all 0.3s;display:none}
+.intro-enter-btn:hover{background:rgba(0,245,255,0.1);box-shadow:0 0 30px rgba(0,245,255,0.3)}
+.intro-enter-btn.show{display:inline-block}
+@keyframes pulse{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:0.8;transform:scale(1.05)}}
+@keyframes pulse-ring{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── MAIN APP ── */
+#app{position:fixed;inset:0;z-index:100;display:flex;opacity:0;pointer-events:none;transition:opacity 0.8s ease}
+#app.show{opacity:1;pointer-events:all}
+
+/* ── SIDEBAR ── */
+.sidebar{width:80px;background:rgba(2,8,24,0.95);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:1.5rem 0;gap:0.25rem;z-index:10;flex-shrink:0;backdrop-filter:blur(10px)}
+.sidebar-logo{font-family:'Orbitron',sans-serif;font-size:0.55rem;color:var(--cyan);letter-spacing:2px;margin-bottom:1.5rem;text-align:center;padding:0 8px;text-shadow:0 0 10px var(--cyan)}
+.nav-item{width:56px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border-radius:8px;border:1px solid transparent;transition:all 0.3s;position:relative}
+.nav-item:hover,.nav-item.active{background:rgba(0,200,255,0.1);border-color:var(--border2)}
+.nav-item.active{box-shadow:0 0 15px rgba(0,200,255,0.2)}
+.nav-icon{font-size:1.3rem;line-height:1}
+.nav-label{font-size:0.55rem;font-family:'Orbitron',sans-serif;color:var(--text3);letter-spacing:1px;text-transform:uppercase;transition:color 0.3s}
+.nav-item:hover .nav-label,.nav-item.active .nav-label{color:var(--cyan)}
+.nav-item.active .nav-icon{filter:drop-shadow(0 0 8px var(--cyan))}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.content-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:2rem;scroll-behavior:smooth}
+.content-area::-webkit-scrollbar{width:4px}
+.content-area::-webkit-scrollbar-track{background:transparent}
+.content-area::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── TOP BAR ── */
+.topbar{height:48px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 2rem;justify-content:space-between;background:rgba(2,8,24,0.8);backdrop-filter:blur(10px);flex-shrink:0}
+.topbar-title{font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:3px;color:var(--cyan);text-transform:uppercase}
+.topbar-status{display:flex;align-items:center;gap:1.5rem;font-size:0.7rem;font-family:'Share Tech Mono',monospace;color:var(--text3)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--neon);animation:pulse 2s infinite;display:inline-block;margin-right:4px}
+
+/* ── PANELS ── */
+.panel{display:none;animation:fadeIn 0.5s ease}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HOME PANEL ── */
+.home-hero{min-height:calc(100vh - 100px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+.home-name{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,5vw,4rem);font-weight:900;letter-spacing:4px;color:var(--text);line-height:1.1;text-shadow:0 0 40px rgba(0,200,255,0.3)}
+.home-name span{color:var(--cyan);display:block}
+.home-title{font-size:1rem;color:var(--text2);letter-spacing:4px;text-transform:uppercase;margin:0.75rem 0;font-family:'Share Tech Mono',monospace}
+.home-role{font-size:1.2rem;color:var(--cyan);min-height:2rem;font-family:'Rajdhani',sans-serif;font-weight:500}
+.home-btns{display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center}
+.btn-primary{padding:12px 32px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.3s;position:relative;overflow:hidden}
+.btn-primary:hover{background:rgba(0,245,255,0.1);box-shadow:0 0 20px rgba(0,245,255,0.25)}
+.btn-secondary{padding:12px 32px;background:rgba(0,100,200,0.15);border:1px solid var(--border2);color:var(--text);font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all 0.3s}
+.btn-secondary:hover{background:rgba(0,100,200,0.3)}
+.scan-line{position:absolute;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.3;animation:scanline 4s linear infinite;pointer-events:none}
+@keyframes scanline{from{top:0}to{top:100%}}
+.hex-grid{position:absolute;inset:0;opacity:0.03;pointer-events:none;overflow:hidden}
+
+/* ── SECTION HEADER ── */
+.sec-header{margin-bottom:2rem}
+.sec-eyebrow{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:0.5rem}
+.sec-title{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:700;color:var(--text);letter-spacing:2px}
+.sec-line{height:1px;background:linear-gradient(90deg,var(--cyan),transparent);width:200px;margin-top:0.75rem}
+
+/* ── ABOUT ── */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.glass-card{background:var(--glass);border:1px solid var(--border);border-radius:4px;padding:1.5rem;position:relative;overflow:hidden;transition:border-color 0.3s}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.6}
+.glass-card:hover{border-color:var(--border2)}
+.card-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.75rem}
+.card-body{font-size:0.95rem;color:var(--text2);line-height:1.7}
+.interests-list{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem}
+.tag{padding:4px 12px;border:1px solid var(--border);font-size:0.75rem;font-family:'Share Tech Mono',monospace;color:var(--text2);background:rgba(0,100,200,0.08);transition:all 0.3s;cursor:default}
+.tag:hover{border-color:var(--cyan);color:var(--cyan)}
+.about-stat{text-align:center;padding:1rem}
+.stat-val{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:700;color:var(--cyan);display:block}
+.stat-lab{font-size:0.7rem;color:var(--text3);font-family:'Share Tech Mono',monospace;letter-spacing:1px}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--cyan),var(--purple),transparent)}
+.tl-item{position:relative;margin-bottom:2rem;padding:1.25rem 1.5rem;background:var(--glass);border:1px solid var(--border);transition:all 0.3s}
+.tl-item:hover{border-color:var(--border2);transform:translateX(4px)}
+.tl-dot{position:absolute;left:-2.35rem;top:50%;transform:translateY(-50%);width:12px;height:12px;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.tl-year{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);letter-spacing:2px}
+.tl-degree{font-family:'Orbitron',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text);margin:0.25rem 0}
+.tl-inst{font-size:0.85rem;color:var(--text2);margin-bottom:0.25rem}
+.tl-grade{font-size:0.8rem;color:var(--neon);font-family:'Share Tech Mono',monospace}
+
+/* ── SKILLS ── */
+.skill-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.skill-cat{background:var(--glass);border:1px solid var(--border);padding:1.25rem;cursor:pointer;transition:all 0.3s;position:relative}
+.skill-cat:hover,.skill-cat.open{border-color:var(--border2);background:rgba(0,200,255,0.05)}
+.skill-cat-top{display:flex;align-items:center;justify-content:space-between}
+.skill-cat-name{font-family:'Orbitron',sans-serif;font-size:0.8rem;color:var(--text);letter-spacing:1px}
+.skill-cat-icon{font-size:1.2rem;color:var(--cyan)}
+.skill-cat-arrow{color:var(--text3);font-size:0.8rem;transition:transform 0.3s}
+.skill-cat.open .skill-cat-arrow{transform:rotate(180deg)}
+.skill-items{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+.skill-cat.open .skill-items{max-height:300px}
+.skill-item{display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-top:1px solid var(--border);margin-top:0.75rem}
+.skill-bar-wrap{flex:1;height:3px;background:rgba(0,200,255,0.1);border-radius:1px}
+.skill-bar{height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:1px;width:0;transition:width 0.8s ease 0.1s}
+.skill-name{font-size:0.8rem;color:var(--text2);min-width:80px;font-family:'Rajdhani',sans-serif}
+
+/* ── PROJECTS ── */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem}
+.proj-card{background:var(--glass);border:1px solid var(--border);padding:1.5rem;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden}
+.proj-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--purple));transform:scaleX(0);transition:transform 0.3s;transform-origin:left}
+.proj-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 10px 40px rgba(0,100,255,0.15)}
+.proj-card:hover::after{transform:scaleX(1)}
+.proj-num{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--purple);margin-bottom:0.5rem}
+.proj-title{font-family:'Orbitron',sans-serif;font-size:0.85rem;color:var(--text);font-weight:700;line-height:1.4;margin-bottom:1rem}
+.proj-techs{display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:auto}
+.tech-badge{padding:3px 10px;border:1px solid var(--border);font-size:0.65rem;font-family:'Share Tech Mono',monospace;color:var(--text3)}
+.proj-click-hint{font-size:0.65rem;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-top:1rem}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(4px)}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-box{background:#050f2e;border:1px solid var(--border2);width:min(680px,95vw);max-height:90vh;overflow-y:auto;padding:2rem;position:relative;animation:modalIn 0.3s ease}
+.modal-box::-webkit-scrollbar{width:3px}
+.modal-box::-webkit-scrollbar-thumb{background:var(--border2)}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:1px solid var(--border);color:var(--text2);width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+.modal-close:hover{border-color:var(--cyan);color:var(--cyan)}
+.modal-num{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--purple);margin-bottom:0.5rem}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;color:var(--cyan);margin-bottom:1.5rem;line-height:1.4}
+.modal-section{margin-bottom:1.25rem}
+.modal-sec-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.5rem}
+.modal-desc{font-size:0.9rem;color:var(--text2);line-height:1.7}
+.achieve-item{display:flex;align-items:center;gap:0.75rem;padding:0.4rem 0;font-size:0.85rem;color:var(--text2)}
+.achieve-item::before{content:'›';color:var(--neon);font-size:1.1rem;flex-shrink:0}
+.modal-techs{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem}
+.modal-tech{padding:4px 12px;border:1px solid var(--cyan);font-size:0.7rem;font-family:'Share Tech Mono',monospace;color:var(--cyan)}
+
+/* ── CERTIFICATIONS ── */
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.cert-card{background:var(--glass);border:1px solid var(--border);padding:1.5rem;cursor:pointer;transition:all 0.3s}
+.cert-card:hover{border-color:var(--border2);background:rgba(0,200,255,0.05)}
+.cert-icon{font-size:2rem;margin-bottom:0.75rem;filter:drop-shadow(0 0 8px var(--cyan))}
+.cert-name{font-family:'Orbitron',sans-serif;font-size:0.8rem;color:var(--text);line-height:1.4;margin-bottom:0.5rem}
+.cert-org{font-size:0.75rem;color:var(--text3);font-family:'Share Tech Mono',monospace}
+
+/* ── ACHIEVEMENTS ── */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.ach-badge{background:var(--glass);border:1px solid var(--border);padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.3s;position:relative}
+.ach-badge:hover{border-color:var(--border2);box-shadow:0 0 30px rgba(0,200,255,0.1)}
+.ach-icon{font-size:2.5rem;margin-bottom:0.75rem;display:block}
+.ach-name{font-family:'Orbitron',sans-serif;font-size:0.75rem;color:var(--text);line-height:1.4}
+.ach-glow{position:absolute;inset:0;border-radius:2px;opacity:0;transition:opacity 0.3s;background:radial-gradient(circle at center,rgba(0,200,255,0.08),transparent)}
+.ach-badge:hover .ach-glow{opacity:1}
+
+/* ── RESUME ── */
+.resume-card{max-width:400px;margin:0 auto;background:var(--glass);border:1px solid var(--border);padding:3rem 2rem;text-align:center;cursor:pointer;transition:all 0.3s}
+.resume-card:hover{border-color:var(--border2);box-shadow:0 0 40px rgba(0,100,255,0.2)}
+.resume-icon{font-size:4rem;margin-bottom:1rem;filter:drop-shadow(0 0 20px var(--cyan))}
+.resume-title{font-family:'Orbitron',sans-serif;font-size:1.2rem;color:var(--cyan);letter-spacing:2px;margin-bottom:0.5rem}
+.resume-sub{font-size:0.8rem;color:var(--text3);font-family:'Share Tech Mono',monospace}
+.resume-modal-btns{display:flex;gap:1rem;justify-content:center;margin-top:2rem;flex-wrap:wrap}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:2rem}
+.contact-card{background:var(--glass);border:1px solid var(--border);padding:1.5rem;transition:all 0.3s;position:relative}
+.contact-card:hover{border-color:var(--border2)}
+.contact-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:0.5rem}
+.contact-val{font-size:0.9rem;color:var(--text);word-break:break-all;margin-bottom:0.75rem}
+.copy-btn{padding:6px 16px;background:transparent;border:1px solid var(--border);color:var(--text3);font-size:0.7rem;font-family:'Share Tech Mono',monospace;cursor:pointer;transition:all 0.3s}
+.copy-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.form-group{margin-bottom:1rem}
+.form-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:0.4rem}
+.form-input,.form-textarea{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:0.95rem;padding:0.75rem 1rem;outline:none;transition:border-color 0.3s;resize:vertical}
+.form-input:focus,.form-textarea:focus{border-color:var(--cyan)}
+.form-textarea{min-height:100px}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* ── FINAL SCREEN ── */
+.final-screen{min-height:calc(100vh - 100px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+.final-msg{max-width:540px;font-size:1.05rem;color:var(--text2);line-height:1.8;font-family:'Share Tech Mono',monospace;margin:1.5rem 0 2rem}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .nav-label{display:none}
+  .nav-item{width:44px;height:44px}
+  .about-grid{grid-template-columns:1fr}
+  .form-2col{grid-template-columns:1fr}
+  .home-btns{flex-direction:column;align-items:center}
+  .content-area{padding:1.25rem}
+}
+
+/* ── MISC ── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:2rem 0}
+.corner-tl,.corner-tr,.corner-bl,.corner-br{position:absolute;width:16px;height:16px;pointer-events:none}
+.corner-tl{top:0;left:0;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan)}
+.corner-tr{top:0;right:0;border-top:1px solid var(--cyan);border-right:1px solid var(--cyan)}
+.corner-bl{bottom:0;left:0;border-bottom:1px solid var(--cyan);border-left:1px solid var(--cyan)}
+.corner-br{bottom:0;right:0;border-bottom:1px solid var(--cyan);border-right:1px solid var(--cyan)}
+</style>
+</head>
+<body>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="bg"></canvas>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-title">INITIALIZING PORTFOLIO</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div style="margin-top:1rem;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text3);letter-spacing:2px" id="loader-status">LOADING SYSTEMS...</div>
+</div>
+
+<!-- AI INTRO -->
+<div id="intro">
+  <div class="avatar-wrap">
+    <div class="avatar-glow"></div>
+    <div class="avatar-ring"></div>
+    <div class="avatar-circle"><span class="avatar-face">🤖</span></div>
+  </div>
+  <div class="intro-text">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);letter-spacing:3px;margin-bottom:1rem">AI GUIDE // ONLINE</div>
+    <div class="intro-msg" id="intro-msg"><span class="cursor"></span></div>
+    <button class="intro-enter-btn" id="intro-enter" onclick="enterApp()">ENTER PORTFOLIO ›</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">PS<br/>PORT</div>
+    <div class="nav-item active" data-panel="home" onclick="showPanel('home',this)">
+      <span class="nav-icon">⌂</span><span class="nav-label">HOME</span>
+    </div>
+    <div class="nav-item" data-panel="about" onclick="showPanel('about',this)">
+      <span class="nav-icon">◈</span><span class="nav-label">ABOUT</span>
+    </div>
+    <div class="nav-item" data-panel="skills" onclick="showPanel('skills',this)">
+      <span class="nav-icon">◉</span><span class="nav-label">SKILLS</span>
+    </div>
+    <div class="nav-item" data-panel="projects" onclick="showPanel('projects',this)">
+      <span class="nav-icon">◆</span><span class="nav-label">PROJ</span>
+    </div>
+    <div class="nav-item" data-panel="resume" onclick="showPanel('resume',this)">
+      <span class="nav-icon">▣</span><span class="nav-label">RESUME</span>
+    </div>
+    <div class="nav-item" data-panel="certs" onclick="showPanel('certs',this)">
+      <span class="nav-icon">◎</span><span class="nav-label">CERTS</span>
+    </div>
+    <div class="nav-item" data-panel="contact" onclick="showPanel('contact',this)">
+      <span class="nav-icon">⊕</span><span class="nav-label">CONTACT</span>
+    </div>
+    <div class="nav-item" data-panel="final" onclick="showPanel('final',this)" style="margin-top:auto">
+      <span class="nav-icon">✦</span><span class="nav-label">END</span>
+    </div>
+  </nav>
+
+  <!-- MAIN AREA -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">HOME // COMMAND CENTER</div>
+      <div class="topbar-status">
+        <span><span class="status-dot"></span>ONLINE</span>
+        <span id="topbar-clock">00:00:00</span>
+      </div>
+    </div>
+    <div class="content-area">
+
+      <!-- HOME -->
+      <div class="panel active" id="panel-home">
+        <div class="home-hero">
+          <div class="scan-line"></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text3);letter-spacing:4px;margin-bottom:1.5rem">PORTFOLIO // V2.0.26</div>
+          <h1 class="home-name">P.<span>Santhoshini</span></h1>
+          <div class="home-title">Electronics &amp; Telematics Engineering</div>
+          <div class="home-role" id="home-role">Hardware Enthusiast</div>
+          <div class="home-btns">
+            <button class="btn-primary" onclick="showPanel('projects',document.querySelector('[data-panel=projects]'))">EXPLORE PORTFOLIO</button>
+            <button class="btn-secondary" onclick="showPanel('resume',document.querySelector('[data-panel=resume]'))">VIEW RESUME</button>
+            <button class="btn-secondary" onclick="showPanel('contact',document.querySelector('[data-panel=contact]'))">CONTACT</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="panel" id="panel-about">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// PROFILE DATA</div>
+          <h2 class="sec-title">ABOUT</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="about-grid">
+          <div class="glass-card">
+            <div class="corner-tl"></div><div class="corner-br"></div>
+            <div class="card-label">// PROFESSIONAL SUMMARY</div>
+            <div class="card-body">Electronics and Telematics Engineering fresher with hands-on experience in Embedded Systems, IoT, RFID systems, Computer Vision, and real-time data acquisition. Passionate about building intelligent systems that combine hardware and software. Seeking an entry-level opportunity to apply technical skills while growing professionally.</div>
+          </div>
+          <div class="glass-card">
+            <div class="corner-tl"></div><div class="corner-br"></div>
+            <div class="card-label">// AREAS OF INTEREST</div>
+            <div class="interests-list">
+              <span class="tag">Embedded Systems</span>
+              <span class="tag">Internet of Things</span>
+              <span class="tag">Artificial Intelligence</span>
+              <span class="tag">Computer Vision</span>
+              <span class="tag">Software Development</span>
+              <span class="tag">Telecommunications</span>
+              <span class="tag">Automation Systems</span>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-header">
+          <div class="sec-eyebrow">// ACADEMIC HISTORY</div>
+          <h2 class="sec-title">EDUCATION</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-dot"></div>
+            <div class="tl-year">2022 – 2026</div>
+            <div class="tl-degree">B.Tech – Electronics &amp; Telematics Engineering</div>
+            <div class="tl-inst">G. Narayanamma Institute of Technology and Science (GNITS), Hyderabad</div>
+            <div class="tl-grade">CGPA: 7.10</div>
+          </div>
+          <div class="tl-item"><div class="tl-dot"></div>
+            <div class="tl-year">2020 – 2022</div>
+            <div class="tl-degree">Intermediate (MPC)</div>
+            <div class="tl-inst">Resonance Junior College, Warangal</div>
+            <div class="tl-grade">85%</div>
+          </div>
+          <div class="tl-item"><div class="tl-dot"></div>
+            <div class="tl-year">2020</div>
+            <div class="tl-degree">Secondary School Certificate (SSC)</div>
+            <div class="tl-inst">Warangal Public School</div>
+            <div class="tl-grade">65.60%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILLS -->
+      <div class="panel" id="panel-skills">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// CAPABILITY MATRIX</div>
+          <h2 class="sec-title">SKILLS</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="skill-cats" id="skill-cats">
+          <div class="skill-cat" onclick="toggleSkill(this)">
+            <div class="skill-cat-top">
+              <span class="skill-cat-icon">⟨⟩</span>
+              <span class="skill-cat-name">Programming</span>
+              <span class="skill-cat-arrow">▼</span>
+            </div>
+            <div class="skill-items">
+              <div class="skill-item"><span class="skill-name">Python</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="80"></div></div></div>
+              <div class="skill-item"><span class="skill-name">C (Basic)</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="50"></div></div></div>
+            </div>
+          </div>
+          <div class="skill-cat" onclick="toggleSkill(this)">
+            <div class="skill-cat-top">
+              <span class="skill-cat-icon">⚙</span>
+              <span class="skill-cat-name">Embedded &amp; IoT</span>
+              <span class="skill-cat-arrow">▼</span>
+            </div>
+            <div class="skill-items">
+              <div class="skill-item"><span class="skill-name">NodeMCU</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="80"></div></div></div>
+              <div class="skill-item"><span class="skill-name">RFID</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="85"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Embedded Sys.</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="70"></div></div></div>
+              <div class="skill-item"><span class="skill-name">IoT</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="78"></div></div></div>
+            </div>
+          </div>
+          <div class="skill-cat" onclick="toggleSkill(this)">
+            <div class="skill-cat-top">
+              <span class="skill-cat-icon">◉</span>
+              <span class="skill-cat-name">Computer Vision</span>
+              <span class="skill-cat-arrow">▼</span>
+            </div>
+            <div class="skill-items">
+              <div class="skill-item"><span class="skill-name">YOLOv4</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="75"></div></div></div>
+              <div class="skill-item"><span class="skill-name">OpenCV</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="70"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Object Detection</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="72"></div></div></div>
+            </div>
+          </div>
+          <div class="skill-cat" onclick="toggleSkill(this)">
+            <div class="skill-cat-top">
+              <span class="skill-cat-icon">◈</span>
+              <span class="skill-cat-name">Tools</span>
+              <span class="skill-cat-arrow">▼</span>
+            </div>
+            <div class="skill-items">
+              <div class="skill-item"><span class="skill-name">GitHub</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="70"></div></div></div>
+              <div class="skill-item"><span class="skill-name">VS Code</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="85"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Google Colab</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="80"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Arduino IDE</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="75"></div></div></div>
+            </div>
+          </div>
+          <div class="skill-cat" onclick="toggleSkill(this)">
+            <div class="skill-cat-top">
+              <span class="skill-cat-icon">◆</span>
+              <span class="skill-cat-name">Soft Skills</span>
+              <span class="skill-cat-arrow">▼</span>
+            </div>
+            <div class="skill-items">
+              <div class="skill-item"><span class="skill-name">Communication</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="88"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Adaptability</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="90"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Teamwork</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="85"></div></div></div>
+              <div class="skill-item"><span class="skill-name">Quick Learner</span><div class="skill-bar-wrap"><div class="skill-bar" data-w="92"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="panel" id="panel-projects">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// BUILD LOG</div>
+          <h2 class="sec-title">PROJECTS</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="proj-grid">
+          <div class="proj-card" onclick="openProject(0)">
+            <div class="proj-num">PROJECT_01</div>
+            <div class="proj-title">IoT-Based Smart Shopping Cart Using RFID</div>
+            <div class="proj-techs">
+              <span class="tech-badge">RFID</span><span class="tech-badge">NodeMCU</span><span class="tech-badge">IoT</span>
+            </div>
+            <div class="proj-click-hint">[ CLICK TO EXPLORE ]</div>
+          </div>
+          <div class="proj-card" onclick="openProject(1)">
+            <div class="proj-num">PROJECT_02</div>
+            <div class="proj-title">IoT-Based Soil Monitoring System</div>
+            <div class="proj-techs">
+              <span class="tech-badge">NodeMCU</span><span class="tech-badge">IoT</span><span class="tech-badge">Sensors</span>
+            </div>
+            <div class="proj-click-hint">[ CLICK TO EXPLORE ]</div>
+          </div>
+          <div class="proj-card" onclick="openProject(2)">
+            <div class="proj-num">PROJECT_03</div>
+            <div class="proj-title">Object Detection System for Visually Impaired Using YOLOv4</div>
+            <div class="proj-techs">
+              <span class="tech-badge">Python</span><span class="tech-badge">YOLOv4</span><span class="tech-badge">OpenCV</span>
+            </div>
+            <div class="proj-click-hint">[ CLICK TO EXPLORE ]</div>
+          </div>
+          <div class="proj-card" onclick="openProject(3)">
+            <div class="proj-num">PROJECT_04</div>
+            <div class="proj-title">AI Interview Coach Pro</div>
+            <div class="proj-techs">
+              <span class="tech-badge">Python</span><span class="tech-badge">AI</span><span class="tech-badge">NLP</span>
+            </div>
+            <div class="proj-click-hint">[ CLICK TO EXPLORE ]</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESUME -->
+      <div class="panel" id="panel-resume">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// CAREER DOCUMENT</div>
+          <h2 class="sec-title">RESUME</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="resume-card" onclick="openResumeModal()">
+          <div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+          <div class="resume-icon">📄</div>
+          <div class="resume-title">P. SANTHOSHINI</div>
+          <div class="resume-sub">ELECTRONICS &amp; TELEMATICS ENGINEER</div>
+          <div style="margin-top:1.5rem;font-size:0.8rem;color:var(--text3);font-family:'Share Tech Mono',monospace">[ CLICK TO VIEW / DOWNLOAD ]</div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATIONS + ACHIEVEMENTS -->
+      <div class="panel" id="panel-certs">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// CREDENTIALS</div>
+          <h2 class="sec-title">CERTIFICATIONS</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="cert-grid">
+          <div class="cert-card" onclick="openCert(0)">
+            <div class="cert-icon">🏆</div>
+            <div class="cert-name">Embedded Systems and Internet of Things</div>
+            <div class="cert-org">GNITS // VALUE ADDED COURSE</div>
+          </div>
+          <div class="cert-card" onclick="openCert(1)">
+            <div class="cert-icon">🔒</div>
+            <div class="cert-name">Network Support and Security</div>
+            <div class="cert-org">GNITS // CERTIFICATION</div>
+          </div>
+          <div class="cert-card" onclick="openCert(2)">
+            <div class="cert-icon">📋</div>
+            <div class="cert-name">Professional Development Program</div>
+            <div class="cert-org">GNITS // VALUE ADDED COURSE</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="sec-header">
+          <div class="sec-eyebrow">// MILESTONE TRACKER</div>
+          <h2 class="sec-title">ACHIEVEMENTS</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="ach-grid">
+          <div class="ach-badge" onclick="openAch(0)">
+            <div class="ach-glow"></div>
+            <span class="ach-icon">🎓</span>
+            <div class="ach-name">Engineering Graduate</div>
+          </div>
+          <div class="ach-badge" onclick="openAch(1)">
+            <div class="ach-glow"></div>
+            <span class="ach-icon">📡</span>
+            <div class="ach-name">IoT Developer</div>
+          </div>
+          <div class="ach-badge" onclick="openAch(2)">
+            <div class="ach-glow"></div>
+            <span class="ach-icon">👁</span>
+            <div class="ach-name">Computer Vision Developer</div>
+          </div>
+          <div class="ach-badge" onclick="openAch(3)">
+            <div class="ach-glow"></div>
+            <span class="ach-icon">🤖</span>
+            <div class="ach-name">AI Application Developer</div>
+          </div>
+          <div class="ach-badge" onclick="openAch(4)">
+            <div class="ach-glow"></div>
+            <span class="ach-icon">⚡</span>
+            <div class="ach-name">HW/SW Integration</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="panel" id="panel-contact">
+        <div class="sec-header">
+          <div class="sec-eyebrow">// COMMUNICATION LINK</div>
+          <h2 class="sec-title">CONTACT</h2>
+          <div class="sec-line"></div>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <div class="corner-tl"></div>
+            <div class="contact-label">// EMAIL</div>
+            <div class="contact-val">santhoshiniwork1312@gmail.com</div>
+            <button class="copy-btn" onclick="copyText('santhoshiniwork1312@gmail.com',this)">COPY</button>
+          </div>
+          <div class="contact-card">
+            <div class="corner-tl"></div>
+            <div class="contact-label">// PHONE</div>
+            <div class="contact-val">+91 7671854348</div>
+            <button class="copy-btn" onclick="copyText('+91 7671854348',this)">COPY</button>
+          </div>
+          <div class="contact-card">
+            <div class="corner-tl"></div>
+            <div class="contact-label">// LINKEDIN</div>
+            <div class="contact-val" style="font-size:0.8rem">linkedin.com/in/santhoshini-penchala-a93071294</div>
+            <button class="copy-btn" onclick="window.open('https://linkedin.com/in/santhoshini-penchala-a93071294','_blank')">OPEN</button>
+          </div>
+        </div>
+        <div class="glass-card" style="max-width:520px">
+          <div class="card-label">// SEND MESSAGE</div>
+          <div class="form-2col">
+            <div class="form-group">
+              <label class="form-label">NAME</label>
+              <input class="form-input" type="text" placeholder="Your name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">EMAIL</label>
+              <input class="form-input" type="email" placeholder="your@email.com"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">MESSAGE</label>
+            <textarea class="form-textarea" placeholder="Your message..."></textarea>
+          </div>
+          <button class="btn-primary" style="width:100%" onclick="alert('Message sent! (Demo — connect to a backend to enable.)')">TRANSMIT MESSAGE</button>
+        </div>
+      </div>
+
+      <!-- FINAL -->
+      <div class="panel" id="panel-final">
+        <div class="final-screen">
+          <div class="avatar-wrap" style="width:120px;height:120px">
+            <div class="avatar-glow"></div>
+            <div class="avatar-circle" style="width:120px;height:120px"><span class="avatar-face" style="font-size:3.5rem">🤖</span></div>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--cyan);letter-spacing:3px;margin-top:1.5rem">AI GUIDE // CLOSING</div>
+          <div class="final-msg">"Thank you for exploring the portfolio of P. Santhoshini. Innovation begins with curiosity, grows through learning, and succeeds through action. Let's build meaningful technology together."</div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
+            <button class="btn-primary" onclick="showPanel('resume',document.querySelector('[data-panel=resume]'))">DOWNLOAD RESUME</button>
+            <button class="btn-secondary" onclick="showPanel('contact',document.querySelector('[data-panel=contact]'))">CONTACT ME</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="proj-modal" onclick="closeIfOutside(event,'proj-modal')">
+  <div class="modal-box">
+    <div class="corner-tl"></div><div class="corner-tr"></div><div class="corner-bl"></div><div class="corner-br"></div>
+    <button class="modal-close" onclick="closeModal('proj-modal')">✕</button>
+    <div class="modal-num" id="m-num"></div>
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-section">
+      <div class="modal-sec-label">// DESCRIPTION</div>
+      <div class="modal-desc" id="m-desc"></div>
+    </div>
+    <div class="modal-section" id="m-ach-wrap">
+      <div class="modal-sec-label">// ACHIEVEMENTS</div>
+      <div id="m-achs"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-sec-label">// TECHNOLOGIES</div>
+      <div class="modal-techs" id="m-techs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUME MODAL -->
+<div class="modal-overlay" id="resume-modal" onclick="closeIfOutside(event,'resume-modal')">
+  <div class="modal-box" style="text-align:center">
+    <div class="corner-tl"></div><div class="corner-tr"></div>
+    <button class="modal-close" onclick="closeModal('resume-modal')">✕</button>
+    <div style="font-size:4rem;margin-bottom:1rem">📄</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:1.2rem;color:var(--cyan);letter-spacing:2px;margin-bottom:0.5rem">P. SANTHOSHINI</div>
+    <div style="font-size:0.8rem;color:var(--text3);font-family:'Share Tech Mono',monospace;margin-bottom:2rem">ELECTRONICS &amp; TELEMATICS ENGINEER</div>
+    <div style="background:var(--glass);border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;text-align:left;font-size:0.85rem;color:var(--text2);line-height:1.8;font-family:'Share Tech Mono',monospace">
+      <span style="color:var(--cyan)">GNITS</span> // B.Tech Electronics &amp; Telematics | GPA: 7.10<br/>
+      <span style="color:var(--cyan)">SKILLS</span> // Python, C, NodeMCU, RFID, YOLOv4, OpenCV, IoT<br/>
+      <span style="color:var(--cyan)">PROJECTS</span> // RFID Cart, Soil Monitor, Vision Aid, AI Coach<br/>
+      <span style="color:var(--cyan)">CERTS</span> // IoT, Network Security, Professional Development
+    </div>
+    <div class="resume-modal-btns">
+      <a href="mailto:santhoshiniwork1312@gmail.com?subject=Resume Request" style="text-decoration:none">
+        <button class="btn-primary">REQUEST RESUME</button>
+      </a>
+      <button class="btn-secondary" onclick="closeModal('resume-modal')">CLOSE</button>
+    </div>
+    <div style="margin-top:1rem;font-size:0.7rem;color:var(--text3);font-family:'Share Tech Mono',monospace">To view the PDF resume, please request it via email or LinkedIn.</div>
+  </div>
+</div>
+
+<!-- CERT/ACH MODAL -->
+<div class="modal-overlay" id="info-modal" onclick="closeIfOutside(event,'info-modal')">
+  <div class="modal-box">
+    <div class="corner-tl"></div><div class="corner-br"></div>
+    <button class="modal-close" onclick="closeModal('info-modal')">✕</button>
+    <div class="modal-sec-label" id="info-label"></div>
+    <div class="modal-title" id="info-title"></div>
+    <div class="modal-desc" id="info-desc"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const PROJECTS = [
+  {
+    num:'PROJECT_01',
+    title:'IoT-Based Smart Shopping Cart Using RFID',
+    desc:'Developed an IoT-enabled smart cart using RFID and NodeMCU to automate product identification and real-time billing through an LCD display, reducing manual checkout effort.',
+    achs:['95%+ RFID tag detection accuracy in controlled testing','Real-time product scanning via Wi-Fi connectivity','Automated billing displayed on LCD'],
+    techs:['RFID','NodeMCU','IoT','LCD Display','Wi-Fi']
+  },
+  {
+    num:'PROJECT_02',
+    title:'IoT-Based Soil Monitoring System',
+    desc:'Designed a real-time soil monitoring solution integrating moisture and NPK sensors with NodeMCU for smart agricultural data acquisition and analysis.',
+    achs:['90–95% sensor reading consistency during testing','Reliable environmental monitoring for smart agriculture'],
+    techs:['NodeMCU','IoT','Moisture Sensor','NPK Sensor','Arduino IDE']
+  },
+  {
+    num:'PROJECT_03',
+    title:'Object Detection System for Visually Impaired Using YOLOv4',
+    desc:'Built a real-time computer vision system using YOLOv4 and Python to detect nearby objects and provide instant voice guidance via pyttsx3, improving navigation for visually impaired users.',
+    achs:['85–92% detection accuracy using pre-trained COCO dataset','Effective across varying lighting conditions and distances','Real-time voice alerts via pyttsx3'],
+    techs:['Python','YOLOv4','OpenCV','pyttsx3','COCO Dataset']
+  },
+  {
+    num:'PROJECT_04',
+    title:'AI Interview Coach Pro',
+    desc:'Developed a Python-based interview preparation platform that analyzes resumes, calculates ATS scores, extracts key skills, generates personalized interview questions, and implements a mock interview system with answer evaluation.',
+    achs:['ATS score calculation and skill extraction','Personalized HR, technical, and project-based question generation','Mock interview system with readiness assessment'],
+    techs:['Python','AI/ML','NLP','Resume Analysis','ATS Scoring']
+  }
+];
+const CERTS = [
+  {label:'CERTIFICATION',title:'Embedded Systems and Internet of Things (IoT)',desc:'Value Added Course completed at G. Narayanamma Institute of Technology and Science (GNITS). Covered embedded hardware fundamentals, sensor integration, and IoT protocol implementation.'},
+  {label:'CERTIFICATION',title:'Network Support and Security',desc:'Completed at GNITS. Covered network infrastructure, cybersecurity principles, protocols, and support methodologies essential for modern technology infrastructure.'},
+  {label:'CERTIFICATION',title:'Professional Development Program',desc:'Value Added Course at GNITS focusing on professional communication, career development strategies, workplace readiness, and industry-oriented skills.'}
+];
+const ACHS = [
+  {label:'ACHIEVEMENT',title:'Electronics & Telematics Engineering Graduate',desc:'Successfully completing a B.Tech in Electronics and Telematics Engineering at GNITS (2022–2026), achieving a CGPA of 7.10 while building hands-on expertise across hardware and software domains.'},
+  {label:'ACHIEVEMENT',title:'IoT Developer',desc:'Designed and deployed two end-to-end IoT systems: a RFID-based smart shopping cart and a soil monitoring system, demonstrating real hardware-software integration skills.'},
+  {label:'ACHIEVEMENT',title:'Computer Vision Project Developer',desc:'Built a working real-time object detection system using YOLOv4 and Python, achieving 85–92% accuracy and deploying voice guidance for assistive technology use.'},
+  {label:'ACHIEVEMENT',title:'AI Application Developer',desc:'Independently developed AI Interview Coach Pro — a complete Python platform combining ATS analysis, NLP-based skill extraction, and mock interview evaluation.'},
+  {label:'ACHIEVEMENT',title:'Hardware & Software Integration Experience',desc:'Demonstrated consistent ability to bridge embedded hardware (NodeMCU, RFID, sensors) with software layers (Python, IoT protocols, computer vision), building production-ready prototypes.'}
+];
+
+// ── CANVAS PARTICLES ──
+(function(){
+  const c=document.getElementById('bg');
+  const ctx=c.getContext('2d');
+  let W,H,pts=[];
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  window.addEventListener('resize',resize);resize();
+  for(let i=0;i<80;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,r:Math.random()*1.5+0.5,op:Math.random()*0.6+0.2});
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,200,255,${p.op})`;ctx.fill();
+    });
+    // lines
+    pts.forEach((a,i)=>{pts.slice(i+1).forEach(b=>{
+      const d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle=`rgba(0,100,200,${0.15*(1-d/120)})`;ctx.lineWidth=0.5;ctx.stroke();}
+    })});
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── LOADER SEQUENCE ──
+const msgs=['INITIALIZING SYSTEMS...','LOADING ASSETS...','CALIBRATING INTERFACE...','READY'];
+let li=0;
+const lStatus=document.getElementById('loader-status');
+const lInterval=setInterval(()=>{li++;if(li<msgs.length)lStatus.textContent=msgs[li];else clearInterval(lInterval);},700);
+setTimeout(()=>{
+  document.getElementById('loader').classList.add('hide');
+  setTimeout(startIntro,900);
+},3200);
+
+// ── TYPEWRITER ──
+function typewrite(el,text,cb){
+  el.innerHTML='<span class="cursor"></span>';
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<text.length){
+      el.innerHTML=text.slice(0,++i)+'<span class="cursor"></span>';
+    } else {
+      clearInterval(iv);
+      el.innerHTML=text;
+      if(cb)cb();
+    }
+  },28);
+}
+
+function startIntro(){
+  const intro=document.getElementById('intro');
+  intro.classList.add('show');
+  const msg="Hello and welcome. I am your digital guide. Let me introduce you to P. Santhoshini, an Electronics and Telematics Engineering graduate passionate about innovation, intelligent systems, and technology-driven problem solving. Explore the portfolio to discover projects, skills, achievements, and career aspirations.";
+  setTimeout(()=>{
+    typewrite(document.getElementById('intro-msg'),msg,()=>{
+      document.getElementById('intro-enter').classList.add('show');
+    });
+  },600);
+}
+
+function enterApp(){
+  document.getElementById('intro').classList.remove('show');
+  document.getElementById('intro').style.pointerEvents='none';
+  setTimeout(()=>{document.getElementById('app').classList.add('show');startClock();startHomeRoles();},500);
+}
+
+// ── CLOCK ──
+function startClock(){
+  setInterval(()=>{
+    const n=new Date();
+    document.getElementById('topbar-clock').textContent=
+      n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');
+  },1000);
+}
+
+// ── HOME ROLES ──
+const ROLES=['Hardware Enthusiast','IoT Developer','AI Explorer','Computer Vision Learner','Problem Solver','Future Engineer'];
+let ri=0;
+function startHomeRoles(){
+  const el=document.getElementById('home-role');
+  setInterval(()=>{ri=(ri+1)%ROLES.length;el.style.opacity='0';setTimeout(()=>{el.textContent=ROLES[ri];el.style.opacity='1';},400);},2500);
+  el.style.transition='opacity 0.4s';
+}
+
+// ── PANEL SWITCHING ──
+const TITLES={'home':'HOME // COMMAND CENTER','about':'ABOUT // PROFILE DATA','skills':'SKILLS // CAPABILITY MATRIX','projects':'PROJECTS // BUILD LOG','resume':'RESUME // CAREER DOCUMENT','certs':'CERTS // CREDENTIALS','contact':'CONTACT // COMMUNICATION LINK','final':'CLOSING // FINAL MESSAGE'};
+function showPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('topbar-title').textContent=TITLES[id]||id.toUpperCase();
+  document.querySelector('.content-area').scrollTop=0;
+}
+
+// ── SKILLS ──
+function toggleSkill(cat){
+  const wasOpen=cat.classList.contains('open');
+  document.querySelectorAll('.skill-cat').forEach(c=>c.classList.remove('open'));
+  if(!wasOpen){
+    cat.classList.add('open');
+    cat.querySelectorAll('.skill-bar').forEach(b=>{
+      setTimeout(()=>{b.style.width=b.dataset.w+'%';},50);
+    });
+  }
+}
+
+// ── PROJECTS ──
+function openProject(i){
+  const p=PROJECTS[i];
+  document.getElementById('m-num').textContent=p.num;
+  document.getElementById('m-title').textContent=p.title;
+  document.getElementById('m-desc').textContent=p.desc;
+  const achWrap=document.getElementById('m-ach-wrap');
+  const achEl=document.getElementById('m-achs');
+  if(p.achs&&p.achs.length){achWrap.style.display='block';achEl.innerHTML=p.achs.map(a=>`<div class="achieve-item">${a}</div>`).join('');}
+  else achWrap.style.display='none';
+  document.getElementById('m-techs').innerHTML=p.techs.map(t=>`<span class="modal-tech">${t}</span>`).join('');
+  document.getElementById('proj-modal').classList.add('show');
+}
+
+// ── CERTS / ACHIEVEMENTS ──
+function openCert(i){
+  const c=CERTS[i];
+  document.getElementById('info-label').textContent='// '+c.label;
+  document.getElementById('info-title').textContent=c.title;
+  document.getElementById('info-desc').textContent=c.desc;
+  document.getElementById('info-modal').classList.add('show');
+}
+function openAch(i){
+  const a=ACHS[i];
+  document.getElementById('info-label').textContent='// '+a.label;
+  document.getElementById('info-title').textContent=a.title;
+  document.getElementById('info-desc').textContent=a.desc;
+  document.getElementById('info-modal').classList.add('show');
+}
+
+// ── RESUME ──
+function openResumeModal(){document.getElementById('resume-modal').classList.add('show');}
+
+// ── MODALS ──
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeIfOutside(e,id){if(e.target.id===id)closeModal(id);}
+
+// ── COPY ──
+function copyText(txt,btn){
+  navigator.clipboard.writeText(txt).then(()=>{
+    const orig=btn.textContent;btn.textContent='COPIED!';btn.style.color='var(--neon)';btn.style.borderColor='var(--neon)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';btn.style.borderColor='';},1500);
+  });
+}
+
+// ── ESC KEY ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['proj-modal','resume-modal','info-modal'].forEach(closeModal);}
+});
+</script>
+</body>
+</html>
